@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tempRangeElement = document.querySelector(".temp-range");
     const windElement = document.querySelector(".weather-details .detail-item:nth-child(1) div:nth-child(2)");
     const precipitationElement = document.querySelector(".weather-details .detail-item:nth-child(2) div:nth-child(2)");
-    const thundershowerElement = document.querySelector(".weather-details .detail-item:nth-child(3) div:nth-child(2)");
+    const conditionElement = document.querySelector(".condition");
 
     const colorPalettes = [
         { backgroundColor: "#F7D101", contentColor: "#000000" },
@@ -15,42 +15,23 @@ document.addEventListener("DOMContentLoaded", () => {
         { backgroundColor: "#760504", contentColor: "#FBDC6A" },
         { backgroundColor: "#155E14", contentColor: "#D2FFAA" },
         { backgroundColor: "#D7DF23", contentColor: "#152039" },
-
         { backgroundColor: "#d7df23", contentColor: "#152039" },
         { backgroundColor: "#4c7031", contentColor: "#ffffff" },
         { backgroundColor: "#503530", contentColor: "#ede8ea" },
         { backgroundColor: "#001f3d", contentColor: "#f8dcbf" },
-
         { backgroundColor: "#e84e38", contentColor: "#d2ffaa" },
         { backgroundColor: "#2b4743", contentColor: "#ffd3db" },
         { backgroundColor: "#ffc61a", contentColor: "#372a28" },
         { backgroundColor: "#88ca5e", contentColor: "#155e14" },
-
         { backgroundColor: "#8c3839", contentColor: "#ffd3db" },
         { backgroundColor: "#810947", contentColor: "#FFFFFF" },
         { backgroundColor: "#763c00", contentColor: "#f9f7dc" },
         { backgroundColor: "#ffce6d", contentColor: "#291b25" },
-
-        { backgroundColor: "#4C7031", contentColor: "#FFFFFF" },
-        { backgroundColor: "#001F3D", contentColor: "#F8DCBF" },
-        { backgroundColor: "#503530", contentColor: "#EDE8EA" },
-        { backgroundColor: "#E84E38", contentColor: "#D2FFAA" },
-
-        { backgroundColor: "#FFD3DB", contentColor: "#2B4743" },
-        { backgroundColor: "#FFC61A", contentColor: "#372A28" },
-        { backgroundColor: "#88CA5E", contentColor: "#155E14" },
-        { backgroundColor: "#8C3839", contentColor: "#FFD3DB" },
-
-        { backgroundColor: "#FFFFFF", contentColor: "#810947" },
-        { backgroundColor: "#763C00", contentColor: "#F9F7DC" },
-        { backgroundColor: "#FFCE6D", contentColor: "#291B25" },
         { backgroundColor: "#CAE8FF", contentColor: "#050A30" },
-
         { backgroundColor: "#2B192E", contentColor: "#F5E8DA" },
         { backgroundColor: "#7B3911", contentColor: "#EBA327" },
         { backgroundColor: "#E1F16B", contentColor: "#272727" },
         { backgroundColor: "#E3DDDC", contentColor: "#2F3B69" },
-
         { backgroundColor: "#795833", contentColor: "#F0DFC8" },
         { backgroundColor: "#AFC1D0", contentColor: "#0B1320" },
         { backgroundColor: "#EDFFCC", contentColor: "#81B622" },
@@ -71,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (this.readyState === this.DONE) {
                 const data = JSON.parse(this.responseText);
                 updateWeatherData(data);
-                fetchPast5HoursWeatherData(city); // Fetch past 5-hour weather data after updating the current weather data
+                fetchPast12HoursWeatherData(city); // Fetch past 12-hour weather data after updating the current weather data
                 applyRandomColorPalette(); // Apply color palette after fetching data
             }
         });
@@ -84,18 +65,18 @@ document.addEventListener("DOMContentLoaded", () => {
         xhr.send(null);
     };
 
-    const fetchPast5HoursWeatherData = (city) => {
+    const fetchPast12HoursWeatherData = (city) => {
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
 
         xhr.addEventListener("readystatechange", function () {
             if (this.readyState === this.DONE) {
                 const data = JSON.parse(this.responseText);
-                updatePast5HoursWeatherData(data);
+                updatePast12HoursWeatherData(data);
             }
         });
 
-        const query = `https://weatherapi-com.p.rapidapi.com/history.json?q=${encodeURIComponent(city)}&dt=${getYesterdayDate()}`;
+        const query = `https://weatherapi-com.p.rapidapi.com/history.json?q=${encodeURIComponent(city)}&dt=${getTodayDate()}`;
         xhr.open("GET", query);
         xhr.setRequestHeader("x-rapidapi-key", "fd4a51179fmsh87677cfe4263525p17d2fejsn16fd16e2b2ca");
         xhr.setRequestHeader("x-rapidapi-host", "weatherapi-com.p.rapidapi.com");
@@ -103,74 +84,79 @@ document.addEventListener("DOMContentLoaded", () => {
         xhr.send(null);
     };
 
-    const getYesterdayDate = () => {
-        const date = new Date();
-        date.setDate(date.getDate() - 1);
-        return date.toISOString().split("T")[0];
+    const getTodayDate = () => {
+        const today = new Date();
+        return today.toISOString().split("T")[0];
     };
 
     const updateWeatherData = (data) => {
-        // Update city name
         cityElement.textContent = data.location.name;
-
-        // Update temperature
-        const temperature = data.current.temp_c;
-        temperatureElement.textContent = `${temperature}°`;
-
-        // Update description
+        temperatureElement.textContent = `${data.current.temp_c}°C`;
         descriptionElement.textContent = data.current.condition.text;
-
-        // Update temperature range
-        // Since the API doesn't provide past 24-hour range, this will be skipped
-        tempRangeElement.textContent = `${temperature}°—${temperature}°`;
-
-        // Update wind
+        tempRangeElement.textContent = `${data.current.temp_c - 1}°C - ${data.current.temp_c + 1}°C`;
         windElement.textContent = `${data.current.wind_kph} km/h`;
+        precipitationElement.textContent = `${data.current.precip_mm} mm`;
 
-        // Update precipitation
-        precipitationElement.textContent = `${data.current.precip_mm} mm/h`;
+        // Update condition based on weather condition codes
+        const conditionCodes = {
+            "rainy": [1063, 1150, 1153, 1180, 1183, 1186, 1189, 1192, 1195],
+            "cloudy": [1003, 1006, 1009, 1030],
+            "summer": [1000],
+            "light thunderstorm": [1087, 1273],
+            "thunderstorm": [1087, 1276],
+            "cold": [1066, 1069, 1072, 1210, 1213, 1216, 1219, 1222, 1225, 1249, 1252, 1255, 1258, 1261, 1264],
+            "heavy rain": [1192, 1195, 1204, 1207, 1243, 1246]
+        };
 
-        // Update thundershower (example field)
-        thundershowerElement.textContent = data.current.condition.text.includes("Thunder") ? "Yes" : "No";
+        let conditionText = "Clear";
+        for (const [key, codes] of Object.entries(conditionCodes)) {
+            if (codes.includes(data.current.condition.code)) {
+                conditionText = key.charAt(0).toUpperCase() + key.slice(1);
+                break;
+            }
+        }
 
-        // Update hourly forecast - Since the API provides only current weather, this part can be adjusted accordingly or removed
-        const hourlyForecastElement = document.querySelector(".hourly-forecast");
-        hourlyForecastElement.innerHTML = `<h3>Current</h3>`;
-        const hourlyItem = document.createElement("div");
-        hourlyItem.className = "hourly-item";
-        hourlyItem.innerHTML = `<span>Now</span><span>${data.current.condition.text}</span><span>${temperature}°</span>`;
-        hourlyForecastElement.appendChild(hourlyItem);
+        conditionElement.textContent = conditionText;
     };
 
-    const updatePast5HoursWeatherData = (data) => {
-        const hourlyForecastElement = document.querySelector(".hourly-forecast");
-        hourlyForecastElement.innerHTML = `<h3>Past 5 Hours</h3>`;
+    const updatePast12HoursWeatherData = (data) => {
+        const hourlyForecast = document.querySelector(".hourly-forecast");
+        hourlyForecast.innerHTML = "<h3>Hourly</h3>";
 
-        const hours = data.forecast.forecastday[0].hour.slice(-5); // Get the last 5 hours
-        hours.forEach((hour) => {
-            const time = new Date(hour.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        const currentTime = new Date();
+        const past12Hours = data.forecast.forecastday[0].hour.filter(hourData => {
+            const hourTime = new Date(hourData.time);
+            return currentTime - hourTime <= 12 * 60 * 60 * 1000 && hourTime <= currentTime; // Only include past 12 hours
+        });
+
+        past12Hours.forEach(hour => {
             const hourlyItem = document.createElement("div");
             hourlyItem.className = "hourly-item";
-            hourlyItem.innerHTML = `<span>${time}</span><span>${hour.condition.text}</span><span>${hour.temp_c}°</span>`;
-            hourlyForecastElement.appendChild(hourlyItem);
+            hourlyItem.innerHTML = `
+                <span>${new Date(hour.time).getHours() % 12 || 12} ${new Date(hour.time).getHours() < 12 ? "AM" : "PM"}</span>
+                <span>${hour.condition.text}</span>
+                <span>${hour.temp_c}°C</span>
+            `;
+            hourlyForecast.appendChild(hourlyItem);
         });
     };
 
-    const handleSearch = () => {
-        const city = searchBar.value;
-        fetchWeatherData(city);
-    };
-
-    // Event listener for search button
-    searchButton.addEventListener("click", handleSearch);
-
-    // Event listener for Enter key in search bar
-    searchBar.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-            handleSearch();
+    searchButton.addEventListener("click", () => {
+        const city = searchBar.value.trim();
+        if (city) {
+            fetchWeatherData(city);
         }
     });
 
-    // Initial fetch for default location
+    searchBar.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            const city = searchBar.value.trim();
+            if (city) {
+                fetchWeatherData(city);
+            }
+        }
+    });
+
+    // Default city weather data on load
     fetchWeatherData("Bangalore");
 });
