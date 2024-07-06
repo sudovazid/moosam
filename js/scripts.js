@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const updatePast12HoursWeatherData = (data) => {
         const hourlyForecast = document.querySelector(".hourly-forecast");
-        hourlyForecast.innerHTML = "<h3>Hourly</h3>";
+        hourlyForecast.innerHTML = "<h3>Past 12 Hour</h3>";
 
         const currentTime = new Date();
         const past12Hours = data.forecast.forecastday[0].hour.filter(hourData => {
