@@ -311,7 +311,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         return "Weather's being weird today!";
     };
-    const fetchWeatherData = (city) => {
+
+    const fetchWeatherData = (location) => {
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
 
@@ -319,12 +320,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (this.readyState === this.DONE) {
                 const data = JSON.parse(this.responseText);
                 updateWeatherData(data);
-                fetchPast12HoursWeatherData(city);
+                fetchPast12HoursWeatherData(location);
                 applyRandomColorPalette();
             }
         });
 
-        const query = `https://weatherapi-com.p.rapidapi.com/current.json?q=${encodeURIComponent(city)}`;
+        const query = `https://weatherapi-com.p.rapidapi.com/current.json?q=${encodeURIComponent(location)}`;
         xhr.open("GET", query);
         xhr.setRequestHeader("x-rapidapi-key", "fd4a51179fmsh87677cfe4263525p17d2fejsn16fd16e2b2ca");
         xhr.setRequestHeader("x-rapidapi-host", "weatherapi-com.p.rapidapi.com");
@@ -332,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
         xhr.send(null);
     };
 
-    const fetchPast12HoursWeatherData = (city) => {
+    const fetchPast12HoursWeatherData = (location) => {
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
 
@@ -343,21 +344,25 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        const query = `https://weatherapi-com.p.rapidapi.com/history.json?q=${encodeURIComponent(city)}&dt=${getTodayDate()}`;
+        const query = `https://weatherapi-com.p.rapidapi.com/history.json?q=${encodeURIComponent(location)}&dt=${getTodayDate()}`;
         xhr.open("GET", query);
         xhr.setRequestHeader("x-rapidapi-key", "fd4a51179fmsh87677cfe4263525p17d2fejsn16fd16e2b2ca");
         xhr.setRequestHeader("x-rapidapi-host", "weatherapi-com.p.rapidapi.com");
 
         xhr.send(null);
     };
-
     const getTodayDate = () => {
         const today = new Date();
         return today.toISOString().split("T")[0];
     };
 
     const updateWeatherData = (data) => {
-        cityElement.textContent = `${data.location.name}, ${data.location.country}`;
+        const locationParts = [];
+        if (data.location.name) locationParts.push(data.location.name);
+        if (data.location.region) locationParts.push(data.location.region);
+        if (data.location.country) locationParts.push(data.location.country);
+        
+        cityElement.textContent = locationParts.join(", ");
         dateTimeElement.textContent = data.location.localtime;
         temperatureElement.textContent = `${data.current.temp_c}°C`;
         const funnyMessage = getFunnyWeatherMessage(data.current.condition.text);
@@ -370,6 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         conditionElement.textContent = data.current.condition.text;
     };
+
 
     const updatePast12HoursWeatherData = (data) => {
         const hourlyForecast = document.querySelector(".hourly-forecast");
@@ -394,21 +400,22 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     searchButton.addEventListener("click", () => {
-        const city = searchBar.value.trim();
-        if (city) {
-            fetchWeatherData(city);
+        const location = searchBar.value.trim();
+        if (location) {
+            fetchWeatherData(location);
         }
     });
 
     searchBar.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
-            const city = searchBar.value.trim();
-            if (city) {
-                fetchWeatherData(city);
+            const location = searchBar.value.trim();
+            if (location) {
+                fetchWeatherData(location);
             }
         }
     });
 
+
     // Default city weather data on load
-    fetchWeatherData("Boston");
+    fetchWeatherData("Boston, Massachusetts, United Kingdom");
 });
