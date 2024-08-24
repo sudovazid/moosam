@@ -39,7 +39,11 @@ Moosam is not just a weather app; it is a statement of how simplicity and functi
 
 
 ## Screenshots
-![2323](screenshot/6.png)
+![2323](screenshot/1.png)
+![2323](screenshot/7.png)
+![2323](screenshot/11.png)
+![2323](screenshot/12.png)
+
 
 
 
