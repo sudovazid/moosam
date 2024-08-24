@@ -48,6 +48,7 @@ body, html {
     padding: 10px;
     background-color: transparent;
     border: none;
+    font-family: "Josefin Sans", sans-serif;
     border-bottom: 1px solid var(--content-color);
     color: var(--content-color);
     font-size: 17px;
@@ -68,76 +69,83 @@ body, html {
     border: none;
 }
 
-/* Main header styling */
-.main-header {
-    background-color: var(--content-color);
-    padding-top: 5px;
-    margin-bottom: 40px;
-}
-
 /* City name styling */
 .city {
-    margin-bottom: 20px;
-    font-size: 20px;
+    margin-bottom: 10px;
+    font-size: 50px;
     font-weight: 800;
 }
 
-/* Date styling */
-.date {
-    margin-bottom: 10px;
-    font-size: 40px; /* Adjusted for better alignment */
+/* Date and time styling */
+.date-time {
+    margin-bottom: 20px;
+    font-size: 28px;
 }
 
 /* Temperature styling */
 .temperature {
-    font-size: 100px; /* Adjusted for better alignment */
-    margin: 10px 0;
+    font-size: 150px;
+    margin: 20px 0;
 }
 
 /* Description and temperature range styling */
 .description, .temp-range {
-    display: flex;
-    margin-bottom: 40px;
-    font-size: 30px;
-    font-weight: 900;
+    font-size: 24px;
+    margin-bottom: 10px;
 }
 
 /* Weather details container styling */
 .weather-details {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    flex-wrap: wrap;
+    margin: 30px 0;
 }
 
 /* Detail item styling */
 .weather-details .detail-item {
     text-align: center;
-    flex: 1;
-    font-size: 20px;
-    font-weight: 900;
+    flex: 1 1 45%;
+    margin-bottom: 20px;
 }
 
-.detail-item div {
-    margin-bottom: 10px;
+.detail-item div:first-child {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.detail-item div:last-child {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Condition styling */
+.condition {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 30px;
 }
 
 /* Hourly forecast container styling */
 .hourly-forecast {
-    border-top: 1px solid;
+    border-top: 1px solid var(--content-color);
     padding-top: 20px;
-    font-size: 20px;
-    text-align: left;
+}
+
+.hourly-forecast h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
 }
 
 /* Hourly item styling */
 .hourly-item {
     display: flex;
     justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid var(--content-color);
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Responsive design for smaller screens */
+/* Responsive design */
 @media (max-width: 768px) {
     .container {
         padding: 20px;
@@ -148,11 +156,11 @@ body, html {
     }
 
     .city {
-        font-size: 18px;
+        font-size: 20px;
     }
 
-    .date {
-        font-size: 30px;
+    .date-time {
+        font-size: 16px;
     }
 
     .temperature {
@@ -160,22 +168,17 @@ body, html {
     }
 
     .description, .temp-range {
-        font-size: 25px;
+        font-size: 20px;
     }
 
     .weather-details .detail-item {
-        font-size: 18px;
-    }
-
-    .hourly-forecast {
-        font-size: 18px;
+        flex: 1 1 100%;
     }
 }
 
-/* Further responsiveness for very small screens */
 @media (max-width: 480px) {
     .container {
-        padding: 10px;
+        padding: 15px;
     }
 
     .logo {
@@ -183,11 +186,11 @@ body, html {
     }
 
     .city {
-        font-size: 16px;
+        font-size: 18px;
     }
 
-    .date {
-        font-size: 25px;
+    .date-time {
+        font-size: 14px;
     }
 
     .temperature {
@@ -195,14 +198,10 @@ body, html {
     }
 
     .description, .temp-range {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .weather-details .detail-item {
-        font-size: 16px;
-    }
-
-    .hourly-forecast {
         font-size: 16px;
     }
 }
