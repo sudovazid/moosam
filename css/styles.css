@@ -20,6 +20,7 @@ body, html {
     max-width: 90%;
     margin: 0 auto;
     padding: 30px;
+  
 }
 
 /* Header styling */
@@ -84,7 +85,7 @@ body, html {
 
 /* Temperature styling */
 .temperature {
-    font-size: 150px;
+    font-size: 250px;
     margin: 20px 0;
 }
 
@@ -96,17 +97,15 @@ body, html {
 
 /* Weather details container styling */
 .weather-details {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
     margin: 30px 0;
 }
 
 /* Detail item styling */
 .weather-details .detail-item {
     text-align: center;
-    flex: 1 1 45%;
-    margin-bottom: 20px;
 }
 
 .detail-item div:first-child {
@@ -132,7 +131,8 @@ body, html {
     padding-top: 20px;
 }
 
-.hourly-forecast h3 {
+
+.hourly-forecast h3{
     font-size: 24px;
     margin-bottom: 15px;
 }
@@ -164,15 +164,27 @@ body, html {
     }
 
     .temperature {
-        font-size: 80px;
+        font-size: 150px;
     }
 
     .description, .temp-range {
         font-size: 20px;
     }
 
+    .weather-details{
+      grid-template-columns: repeat(2, 1fr);
+    }
     .weather-details .detail-item {
-        flex: 1 1 100%;
+      font-size: 16px;
+    }
+    .search-container{
+      max-width: 300px;
+    }
+    .search-bar{
+      font-size: 16px;
+    }
+    .search-button{
+      font-size: 20px;
     }
 }
 
@@ -194,14 +206,31 @@ body, html {
     }
 
     .temperature {
-        font-size: 60px;
+        font-size: 120px;
     }
 
     .description, .temp-range {
         font-size: 18px;
     }
 
-    .weather-details .detail-item {
-        font-size: 16px;
+    .weather-details {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .weather-details .detail-item{
+      font-size: 14px;
+    }
+    .header{
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .search-container{
+      max-width: 100%;
+      margin-top: 15px;
+    }
+    .search-bar{
+      font-size: 14px;
+    }
+    .search-button{
+      font-size: 18pxi;
     }
 }
