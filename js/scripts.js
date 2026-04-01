@@ -378,25 +378,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     const updatePast12HoursWeatherData = (data) => {
-        const hourlyForecast = document.querySelector(".hourly-forecast");
-        hourlyForecast.innerHTML = "<h3>Past 12 Hour</h3>";
+    const hourlyForecast = document.querySelector(".hourly-forecast");
+    hourlyForecast.innerHTML = "<h3>Past 12 Hours</h3>";
 
-        const currentTime = new Date();
-        const past12Hours = data.forecast.forecastday[0].hour.filter((hourData) => {
-            const hourTime = new Date(hourData.time);
-            return currentTime - hourTime <= 12 * 60 * 60 * 1000 && hourTime <= currentTime; // Only include past 12 hours
-        });
+    // Get all 24 hours from the response
+    const allHours = data.forecast.forecastday[0].hour;
+    
+    // Get the current hour from the API's location time to avoid timezone issues
+    const apiLocalTime = new Date(data.location.localtime);
+    const currentHour = apiLocalTime.getHours();
 
-        past12Hours.forEach((hour) => {
-            const hourlyItem = document.createElement("div");
-            hourlyItem.className = "hourly-item";
-            hourlyItem.innerHTML = `
-                <span>${new Date(hour.time).getHours() % 12 || 12} ${new Date(hour.time).getHours() < 12 ? "AM" : "PM"}</span>
-                <span>${hour.condition.text}</span>
-                <span>${hour.temp_c}°C</span>
-            `;
-            hourlyForecast.appendChild(hourlyItem);
-        });
+    // Filter for the last 12 hours (only from the current day's data)
+    const past12Hours = allHours.filter((hourData) => {
+        const hourTime = new Date(hourData.time);
+        const hourValue = hourTime.getHours();
+        
+        // Include hours that are less than or equal to current hour 
+        // and within a 12-hour window
+        return hourValue <= currentHour && hourValue > currentHour - 12;
+    });
+
+    past12Hours.forEach((hour) => {
+        const hourDate = new Date(hour.time);
+        const hours = hourDate.getHours();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHour = hours % 12 || 12;
+
+        const hourlyItem = document.createElement("div");
+        hourlyItem.className = "hourly-item";
+        hourlyItem.innerHTML = `
+            <span>${displayHour} ${ampm}</span>
+            <span>${hour.condition.text}</span>
+            <span>${Math.round(hour.temp_c)}°C</span>
+        `;
+        hourlyForecast.appendChild(hourlyItem);
+    });
     };
 
     searchButton.addEventListener("click", () => {
