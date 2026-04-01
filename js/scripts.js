@@ -334,26 +334,67 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const fetchPast12HoursWeatherData = (location) => {
-        const xhr = new XMLHttpRequest();
-        xhr.withCredentials = true;
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
 
-        xhr.addEventListener("readystatechange", function () {
-            if (this.readyState === this.DONE) {
-                const data = JSON.parse(this.responseText);
-                updatePast12HoursWeatherData(data);
-            }
+        const formatDate = (date) => date.toISOString().split("T")[0];
+
+        // We need to fetch yesterday AND today to get a continuous 12-hour block
+        const fetchDay = (date) => {
+            return new Promise((resolve) => {
+                const xhr = new XMLHttpRequest();
+                xhr.withCredentials = true;
+                xhr.addEventListener("readystatechange", function () {
+                    if (this.readyState === this.DONE) {
+                        resolve(JSON.parse(this.responseText));
+                    }
+                });
+                const query = `https://weatherapi-com.p.rapidapi.com/history.json?q=${encodeURIComponent(location)}&dt=${formatDate(date)}`;
+                xhr.open("GET", query);
+                xhr.setRequestHeader("x-rapidapi-key", "fd4a51179fmsh87677cfe4263525p17d2fejsn16fd16e2b2ca");
+                xhr.setRequestHeader("x-rapidapi-host", "weatherapi-com.p.rapidapi.com");
+                xhr.send(null);
+            });
+        };
+
+        // Fetch both days and merge them
+        Promise.all([fetchDay(yesterday), fetchDay(today)]).then(([yesterdayData, todayData]) => {
+            const combinedHours = [
+                ...yesterdayData.forecast.forecastday[0].hour,
+                ...todayData.forecast.forecastday[0].hour
+            ];
+            updatePast12HoursWeatherData(combinedHours, todayData.location.localtime);
+        });
+    };
+
+    const updatePast12HoursWeatherData = (allHours, localTimeStr) => {
+        const hourlyForecast = document.querySelector(".hourly-forecast");
+        hourlyForecast.innerHTML = "<h3>Past 12 Hours</h3>";
+
+        const apiNow = new Date(localTimeStr);
+        const twelveHoursAgo = new Date(apiNow.getTime() - 12 * 60 * 60 * 1000);
+
+        // Filter for hours between (Now - 12h) and (Now)
+        const past12Hours = allHours.filter(hourData => {
+            const hourTime = new Date(hourData.time);
+            return hourTime >= twelveHoursAgo && hourTime <= apiNow;
         });
 
-        const query = `https://weatherapi-com.p.rapidapi.com/history.json?q=${encodeURIComponent(location)}&dt=${getTodayDate()}`;
-        xhr.open("GET", query);
-        xhr.setRequestHeader("x-rapidapi-key", "fd4a51179fmsh87677cfe4263525p17d2fejsn16fd16e2b2ca");
-        xhr.setRequestHeader("x-rapidapi-host", "weatherapi-com.p.rapidapi.com");
+        past12Hours.forEach((hour) => {
+            const hourDate = new Date(hour.time);
+            const displayHour = hourDate.getHours() % 12 || 12;
+            const ampm = hourDate.getHours() >= 12 ? "PM" : "AM";
 
-        xhr.send(null);
-    };
-    const getTodayDate = () => {
-        const today = new Date();
-        return today.toISOString().split("T")[0];
+            const hourlyItem = document.createElement("div");
+            hourlyItem.className = "hourly-item";
+            hourlyItem.innerHTML = `
+                <span>${displayHour} ${ampm}</span>
+                <span>${hour.condition.text}</span>
+                <span>${Math.round(hour.temp_c)}°C</span>
+            `;
+            hourlyForecast.appendChild(hourlyItem);
+        });
     };
 
     const updateWeatherData = (data) => {
@@ -374,45 +415,6 @@ document.addEventListener("DOMContentLoaded", () => {
         uvElement.textContent = data.current.uv;
 
         conditionElement.textContent = data.current.condition.text;
-    };
-
-
-    const updatePast12HoursWeatherData = (data) => {
-    const hourlyForecast = document.querySelector(".hourly-forecast");
-    hourlyForecast.innerHTML = "<h3>Past 12 Hours</h3>";
-
-    // Get all 24 hours from the response
-    const allHours = data.forecast.forecastday[0].hour;
-    
-    // Get the current hour from the API's location time to avoid timezone issues
-    const apiLocalTime = new Date(data.location.localtime);
-    const currentHour = apiLocalTime.getHours();
-
-    // Filter for the last 12 hours (only from the current day's data)
-    const past12Hours = allHours.filter((hourData) => {
-        const hourTime = new Date(hourData.time);
-        const hourValue = hourTime.getHours();
-        
-        // Include hours that are less than or equal to current hour 
-        // and within a 12-hour window
-        return hourValue <= currentHour && hourValue > currentHour - 12;
-    });
-
-    past12Hours.forEach((hour) => {
-        const hourDate = new Date(hour.time);
-        const hours = hourDate.getHours();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        const displayHour = hours % 12 || 12;
-
-        const hourlyItem = document.createElement("div");
-        hourlyItem.className = "hourly-item";
-        hourlyItem.innerHTML = `
-            <span>${displayHour} ${ampm}</span>
-            <span>${hour.condition.text}</span>
-            <span>${Math.round(hour.temp_c)}°C</span>
-        `;
-        hourlyForecast.appendChild(hourlyItem);
-    });
     };
 
     searchButton.addEventListener("click", () => {
